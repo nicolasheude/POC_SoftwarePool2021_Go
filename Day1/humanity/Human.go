@@ -16,6 +16,9 @@ type Human struct {
 }
 
 func NewHumanFromCSV(csv []string) (*Human, error) {
+	if len(csv) != 3 {
+		return nil, errors.New("Bad format")
+	}
 	tempAge, err := strconv.Atoi(csv[1])
 	if err != nil {
 		return nil, errors.New("Not int")
