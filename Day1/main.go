@@ -61,7 +61,9 @@ func vousAvezDitJSON() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(myHuman)
+	for i := range myHuman {
+		fmt.Println(myHuman[i])
+	}
 }
 
 func main() {
@@ -70,4 +72,5 @@ func main() {
 	// créerLaViep1()
 	// créerLaViep2()
 	vousAvezDitJSON()
+	// fmt.Println(&humanity.Pilot{&humanity.Human{"Jason", 10, "Fr"}})
 }

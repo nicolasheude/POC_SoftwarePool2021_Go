@@ -62,5 +62,5 @@ func NewHumansFromJsonFile(path string) ([]*Human, error) {
 }
 
 func (h *Human) String() string {
-	return fmt.Sprintf("Name : %s, Age %d, Country : %s\n", h.Name, h.Age, h.Country)
+	return fmt.Sprintf("%s, %d years old from %s", h.Name, h.Age, h.Country)
 }
