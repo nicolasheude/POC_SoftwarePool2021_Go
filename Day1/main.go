@@ -56,9 +56,18 @@ func créerLaViep2() {
 	fmt.Println(myHuman)
 }
 
+func vousAvezDitJSON() {
+	myHuman, err := humanity.NewHumansFromJsonFile("Go_json/big.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(myHuman)
+}
+
 func main() {
 	// lireUnFichier()
 	// traiterLesDonnees()
 	// créerLaViep1()
-	créerLaViep2()
+	// créerLaViep2()
+	vousAvezDitJSON()
 }

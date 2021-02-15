@@ -2,8 +2,10 @@ package humanity
 
 import (
 	"SofwareGoDay1/data"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 )
 
@@ -38,6 +40,20 @@ func NewHumansFromCsvFile(path string) ([]*Human, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+	return human, err
+}
+
+func NewHumansFromJsonFile(path string) ([]*Human, error) {
+	var human []*Human
+	temp, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, errors.New("Error read")
+	}
+	bytes := []byte(temp)
+	err = json.Unmarshal(bytes, &human)
+	if err != nil {
+		return nil, errors.New("Error Json")
 	}
 	return human, err
 }
