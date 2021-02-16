@@ -2,12 +2,17 @@ package router
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func world(c *gin.Context) {
-	c.String(http.StatusOK, "Hello world")
+	temp := os.Getenv("HELLO_MESSAGE")
+	if temp == "" {
+		c.String(http.StatusNotFound, "no message defined")
+	}
+	c.String(http.StatusOK, "%s", temp)
 }
 
 func query(c *gin.Context) {
@@ -55,8 +60,13 @@ func body(c *gin.Context) {
 	}
 }
 
+func health(c *gin.Context) {
+	c.AbortWithStatus(http.StatusOK)
+}
+
 func ApplyRoutes(r *gin.Engine) {
 	r.GET("/hello", world)
+	r.GET("/health", health)
 	r.GET("/repeat-my-query", query)
 	r.GET("/repeat-my-param/:message", param)
 	r.POST("/repeat-my-body", body)
