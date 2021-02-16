@@ -1,7 +1,9 @@
 package router
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -12,6 +14,11 @@ import (
 type Queries struct {
 	Key   string
 	Value string
+}
+
+type Palindromes struct {
+	Input  string
+	Result bool
 }
 
 func world(c *gin.Context) {
@@ -117,6 +124,41 @@ func queries(c *gin.Context) {
 // 	return q
 // }
 
+func isPalindromes(str string) bool {
+	if str == "" {
+		return true
+	}
+	newStr := strings.ToLower(str)
+	myLen := len(str) - 1
+
+	for i := 0; myLen != 0; i++ {
+		if newStr[i] != newStr[myLen] {
+			return false
+		}
+		myLen--
+	}
+	return true
+}
+
+func palindromes(c *gin.Context) {
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	} else {
+		var temp []string
+		bytes := []byte(string(body))
+		err = json.Unmarshal(bytes, &temp)
+		lenContent := len(temp)
+		p := make([]Palindromes, lenContent)
+		for i := range temp {
+			p[i].Input = temp[i]
+			p[i].Result = isPalindromes(temp[i])
+		}
+		c.JSON(http.StatusOK, p)
+	}
+}
+
 func ApplyRoutes(r *gin.Engine) {
 	r.GET("/hello", world)
 	r.GET("/health", health)
@@ -126,4 +168,5 @@ func ApplyRoutes(r *gin.Engine) {
 	r.GET("/repeat-my-header", header)
 	r.GET("/repeat-my-cookie", cookie)
 	r.GET("/repeat-all-my-queries", queries)
+	r.POST("/are-these-palindromes", palindromes)
 }
