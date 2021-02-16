@@ -71,6 +71,7 @@ func main() {
 	// traiterLesDonnees()
 	// créerLaViep1()
 	// créerLaViep2()
-	vousAvezDitJSON()
-	// fmt.Println(&humanity.Pilot{&humanity.Human{"Jason", 10, "Fr"}})
+	// vousAvezDitJSON()
+	fmt.Println(&humanity.Pilot{&humanity.Human{"Jason", 10, "Fr", true}})
+	// fmt.Println(&humanity.Human{"Jason", 10, "Fr", true})
 }

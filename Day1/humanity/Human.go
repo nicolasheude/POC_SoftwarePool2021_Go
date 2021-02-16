@@ -13,6 +13,7 @@ type Human struct {
 	Name    string
 	Age     int
 	Country string
+	Ready   bool
 }
 
 func NewHumanFromCSV(csv []string) (*Human, error) {
@@ -23,7 +24,7 @@ func NewHumanFromCSV(csv []string) (*Human, error) {
 	if err != nil {
 		return nil, errors.New("Not int")
 	}
-	human := Human{csv[0], tempAge, csv[2]}
+	human := Human{csv[0], tempAge, csv[2], false}
 	return &human, err
 }
 
