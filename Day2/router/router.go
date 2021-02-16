@@ -1,9 +1,8 @@
 package router
 
 import (
-	"encoding/json"
+	"SofwareGoDay2/middlewares"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -141,22 +140,15 @@ func isPalindromes(str string) bool {
 }
 
 func palindromes(c *gin.Context) {
-	body, err := ioutil.ReadAll(c.Request.Body)
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	} else {
-		var temp []string
-		bytes := []byte(string(body))
-		err = json.Unmarshal(bytes, &temp)
-		lenContent := len(temp)
-		p := make([]Palindromes, lenContent)
-		for i := range temp {
-			p[i].Input = temp[i]
-			p[i].Result = isPalindromes(temp[i])
-		}
-		c.JSON(http.StatusOK, p)
+	var temp []string
+	c.BindJSON(&temp)
+	lenContent := len(temp)
+	p := make([]Palindromes, lenContent)
+	for i := range temp {
+		p[i].Input = temp[i]
+		p[i].Result = isPalindromes(temp[i])
 	}
+	c.JSON(http.StatusOK, p)
 }
 
 func ApplyRoutes(r *gin.Engine) {
@@ -168,5 +160,7 @@ func ApplyRoutes(r *gin.Engine) {
 	r.GET("/repeat-my-header", header)
 	r.GET("/repeat-my-cookie", cookie)
 	r.GET("/repeat-all-my-queries", queries)
-	r.POST("/are-these-palindromes", palindromes)
+	// r.Use(middlewares.CheckPalindrome())
+	// r.POST("/are-these-palindromes", palindromes)
+	r.POST("/are-these-palindromes", middlewares.CheckPalindrome(), palindromes)
 }
