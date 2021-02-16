@@ -47,11 +47,11 @@ func cookie(c *gin.Context) {
 }
 
 func body(c *gin.Context) {
-	message := c.PostForm("message")
-	if message == "" {
+	temp := c.PostForm("message")
+	if temp == "" {
 		c.AbortWithStatus(http.StatusBadRequest)
 	} else {
-		c.String(http.StatusOK, "%s", message)
+		c.String(http.StatusOK, "%s", temp)
 	}
 }
 
