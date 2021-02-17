@@ -33,9 +33,11 @@ type Developper struct {
 type DevelopperEdges struct {
 	// Contact holds the value of the contact edge.
 	Contact *Contact `json:"contact,omitempty"`
+	// Competence holds the value of the competence edge.
+	Competence []*Competence `json:"competence,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ContactOrErr returns the Contact value or an error if the edge
@@ -50,6 +52,15 @@ func (e DevelopperEdges) ContactOrErr() (*Contact, error) {
 		return e.Contact, nil
 	}
 	return nil, &NotLoadedError{edge: "contact"}
+}
+
+// CompetenceOrErr returns the Competence value or an error if the edge
+// was not loaded in eager-loading.
+func (e DevelopperEdges) CompetenceOrErr() ([]*Competence, error) {
+	if e.loadedTypes[1] {
+		return e.Competence, nil
+	}
+	return nil, &NotLoadedError{edge: "competence"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -114,6 +125,11 @@ func (d *Developper) assignValues(columns []string, values []interface{}) error 
 // QueryContact queries the "contact" edge of the Developper entity.
 func (d *Developper) QueryContact() *ContactQuery {
 	return (&DevelopperClient{config: d.config}).QueryContact(d)
+}
+
+// QueryCompetence queries the "competence" edge of the Developper entity.
+func (d *Developper) QueryCompetence() *CompetenceQuery {
+	return (&DevelopperClient{config: d.config}).QueryCompetence(d)
 }
 
 // Update returns a builder for updating this Developper.

@@ -9,6 +9,7 @@ import (
 
 	"SofwareGoDay3/ent/migrate"
 
+	"SofwareGoDay3/ent/competence"
 	"SofwareGoDay3/ent/contact"
 	"SofwareGoDay3/ent/developper"
 
@@ -22,6 +23,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Competence is the client for interacting with the Competence builders.
+	Competence *CompetenceClient
 	// Contact is the client for interacting with the Contact builders.
 	Contact *ContactClient
 	// Developper is the client for interacting with the Developper builders.
@@ -39,6 +42,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Competence = NewCompetenceClient(c.config)
 	c.Contact = NewContactClient(c.config)
 	c.Developper = NewDevelopperClient(c.config)
 }
@@ -74,6 +78,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Competence: NewCompetenceClient(cfg),
 		Contact:    NewContactClient(cfg),
 		Developper: NewDevelopperClient(cfg),
 	}, nil
@@ -94,6 +99,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
 		config:     cfg,
+		Competence: NewCompetenceClient(cfg),
 		Contact:    NewContactClient(cfg),
 		Developper: NewDevelopperClient(cfg),
 	}, nil
@@ -102,7 +108,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Contact.
+//		Competence.
 //		Query().
 //		Count(ctx)
 //
@@ -125,8 +131,113 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Competence.Use(hooks...)
 	c.Contact.Use(hooks...)
 	c.Developper.Use(hooks...)
+}
+
+// CompetenceClient is a client for the Competence schema.
+type CompetenceClient struct {
+	config
+}
+
+// NewCompetenceClient returns a client for the Competence from the given config.
+func NewCompetenceClient(c config) *CompetenceClient {
+	return &CompetenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `competence.Hooks(f(g(h())))`.
+func (c *CompetenceClient) Use(hooks ...Hook) {
+	c.hooks.Competence = append(c.hooks.Competence, hooks...)
+}
+
+// Create returns a create builder for Competence.
+func (c *CompetenceClient) Create() *CompetenceCreate {
+	mutation := newCompetenceMutation(c.config, OpCreate)
+	return &CompetenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Competence entities.
+func (c *CompetenceClient) CreateBulk(builders ...*CompetenceCreate) *CompetenceCreateBulk {
+	return &CompetenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Competence.
+func (c *CompetenceClient) Update() *CompetenceUpdate {
+	mutation := newCompetenceMutation(c.config, OpUpdate)
+	return &CompetenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CompetenceClient) UpdateOne(co *Competence) *CompetenceUpdateOne {
+	mutation := newCompetenceMutation(c.config, OpUpdateOne, withCompetence(co))
+	return &CompetenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CompetenceClient) UpdateOneID(id int) *CompetenceUpdateOne {
+	mutation := newCompetenceMutation(c.config, OpUpdateOne, withCompetenceID(id))
+	return &CompetenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Competence.
+func (c *CompetenceClient) Delete() *CompetenceDelete {
+	mutation := newCompetenceMutation(c.config, OpDelete)
+	return &CompetenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *CompetenceClient) DeleteOne(co *Competence) *CompetenceDeleteOne {
+	return c.DeleteOneID(co.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *CompetenceClient) DeleteOneID(id int) *CompetenceDeleteOne {
+	builder := c.Delete().Where(competence.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CompetenceDeleteOne{builder}
+}
+
+// Query returns a query builder for Competence.
+func (c *CompetenceClient) Query() *CompetenceQuery {
+	return &CompetenceQuery{config: c.config}
+}
+
+// Get returns a Competence entity by its id.
+func (c *CompetenceClient) Get(ctx context.Context, id int) (*Competence, error) {
+	return c.Query().Where(competence.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CompetenceClient) GetX(ctx context.Context, id int) *Competence {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a Competence.
+func (c *CompetenceClient) QueryOwner(co *Competence) *DevelopperQuery {
+	query := &DevelopperQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(competence.Table, competence.FieldID, id),
+			sqlgraph.To(developper.Table, developper.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, competence.OwnerTable, competence.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CompetenceClient) Hooks() []Hook {
+	return c.hooks.Competence
 }
 
 // ContactClient is a client for the Contact schema.
@@ -325,6 +436,22 @@ func (c *DevelopperClient) QueryContact(d *Developper) *ContactQuery {
 			sqlgraph.From(developper.Table, developper.FieldID, id),
 			sqlgraph.To(contact.Table, contact.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, developper.ContactTable, developper.ContactColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompetence queries the competence edge of a Developper.
+func (c *DevelopperClient) QueryCompetence(d *Developper) *CompetenceQuery {
+	query := &CompetenceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(developper.Table, developper.FieldID, id),
+			sqlgraph.To(competence.Table, competence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, developper.CompetenceTable, developper.CompetenceColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil

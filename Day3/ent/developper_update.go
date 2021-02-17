@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"SofwareGoDay3/ent/competence"
 	"SofwareGoDay3/ent/contact"
 	"SofwareGoDay3/ent/developper"
 	"SofwareGoDay3/ent/predicate"
@@ -84,6 +85,21 @@ func (du *DevelopperUpdate) SetContact(c *Contact) *DevelopperUpdate {
 	return du.SetContactID(c.ID)
 }
 
+// AddCompetenceIDs adds the "competence" edge to the Competence entity by IDs.
+func (du *DevelopperUpdate) AddCompetenceIDs(ids ...int) *DevelopperUpdate {
+	du.mutation.AddCompetenceIDs(ids...)
+	return du
+}
+
+// AddCompetence adds the "competence" edges to the Competence entity.
+func (du *DevelopperUpdate) AddCompetence(c ...*Competence) *DevelopperUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return du.AddCompetenceIDs(ids...)
+}
+
 // Mutation returns the DevelopperMutation object of the builder.
 func (du *DevelopperUpdate) Mutation() *DevelopperMutation {
 	return du.mutation
@@ -93,6 +109,27 @@ func (du *DevelopperUpdate) Mutation() *DevelopperMutation {
 func (du *DevelopperUpdate) ClearContact() *DevelopperUpdate {
 	du.mutation.ClearContact()
 	return du
+}
+
+// ClearCompetence clears all "competence" edges to the Competence entity.
+func (du *DevelopperUpdate) ClearCompetence() *DevelopperUpdate {
+	du.mutation.ClearCompetence()
+	return du
+}
+
+// RemoveCompetenceIDs removes the "competence" edge to Competence entities by IDs.
+func (du *DevelopperUpdate) RemoveCompetenceIDs(ids ...int) *DevelopperUpdate {
+	du.mutation.RemoveCompetenceIDs(ids...)
+	return du
+}
+
+// RemoveCompetence removes "competence" edges to Competence entities.
+func (du *DevelopperUpdate) RemoveCompetence(c ...*Competence) *DevelopperUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return du.RemoveCompetenceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -257,6 +294,60 @@ func (du *DevelopperUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.CompetenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedCompetenceIDs(); len(nodes) > 0 && !du.mutation.CompetenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.CompetenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{developper.Label}
@@ -332,6 +423,21 @@ func (duo *DevelopperUpdateOne) SetContact(c *Contact) *DevelopperUpdateOne {
 	return duo.SetContactID(c.ID)
 }
 
+// AddCompetenceIDs adds the "competence" edge to the Competence entity by IDs.
+func (duo *DevelopperUpdateOne) AddCompetenceIDs(ids ...int) *DevelopperUpdateOne {
+	duo.mutation.AddCompetenceIDs(ids...)
+	return duo
+}
+
+// AddCompetence adds the "competence" edges to the Competence entity.
+func (duo *DevelopperUpdateOne) AddCompetence(c ...*Competence) *DevelopperUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return duo.AddCompetenceIDs(ids...)
+}
+
 // Mutation returns the DevelopperMutation object of the builder.
 func (duo *DevelopperUpdateOne) Mutation() *DevelopperMutation {
 	return duo.mutation
@@ -341,6 +447,27 @@ func (duo *DevelopperUpdateOne) Mutation() *DevelopperMutation {
 func (duo *DevelopperUpdateOne) ClearContact() *DevelopperUpdateOne {
 	duo.mutation.ClearContact()
 	return duo
+}
+
+// ClearCompetence clears all "competence" edges to the Competence entity.
+func (duo *DevelopperUpdateOne) ClearCompetence() *DevelopperUpdateOne {
+	duo.mutation.ClearCompetence()
+	return duo
+}
+
+// RemoveCompetenceIDs removes the "competence" edge to Competence entities by IDs.
+func (duo *DevelopperUpdateOne) RemoveCompetenceIDs(ids ...int) *DevelopperUpdateOne {
+	duo.mutation.RemoveCompetenceIDs(ids...)
+	return duo
+}
+
+// RemoveCompetence removes "competence" edges to Competence entities.
+func (duo *DevelopperUpdateOne) RemoveCompetence(c ...*Competence) *DevelopperUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return duo.RemoveCompetenceIDs(ids...)
 }
 
 // Save executes the query and returns the updated Developper entity.
@@ -502,6 +629,60 @@ func (duo *DevelopperUpdateOne) sqlSave(ctx context.Context) (_node *Developper,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: contact.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.CompetenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedCompetenceIDs(); len(nodes) > 0 && !duo.mutation.CompetenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.CompetenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
 				},
 			},
 		}

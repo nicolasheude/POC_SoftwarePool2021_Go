@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"SofwareGoDay3/ent/competence"
 	"SofwareGoDay3/ent/contact"
 	"SofwareGoDay3/ent/developper"
 	"SofwareGoDay3/ent/schema"
@@ -12,6 +13,30 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	competenceFields := schema.Competence{}.Fields()
+	_ = competenceFields
+	// competenceDescLevel is the schema descriptor for level field.
+	competenceDescLevel := competenceFields[2].Descriptor()
+	// competence.LevelValidator is a validator for the "level" field. It is called by the builders before save.
+	competence.LevelValidator = func() func(int) error {
+		validators := competenceDescLevel.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(level int) error {
+			for _, fn := range fns {
+				if err := fn(level); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// competenceDescID is the schema descriptor for id field.
+	competenceDescID := competenceFields[0].Descriptor()
+	// competence.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	competence.IDValidator = competenceDescID.Validators[0].(func(int) error)
 	contactFields := schema.Contact{}.Fields()
 	_ = contactFields
 	// contactDescID is the schema descriptor for id field.

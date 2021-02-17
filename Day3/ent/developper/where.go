@@ -522,6 +522,34 @@ func HasContactWith(preds ...predicate.Contact) predicate.Developper {
 	})
 }
 
+// HasCompetence applies the HasEdge predicate on the "competence" edge.
+func HasCompetence() predicate.Developper {
+	return predicate.Developper(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetenceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompetenceTable, CompetenceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompetenceWith applies the HasEdge predicate on the "competence" edge with a given conditions (other predicates).
+func HasCompetenceWith(preds ...predicate.Competence) predicate.Developper {
+	return predicate.Developper(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompetenceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CompetenceTable, CompetenceColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Developper) predicate.Developper {
 	return predicate.Developper(func(s *sql.Selector) {

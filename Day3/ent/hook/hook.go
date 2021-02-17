@@ -8,6 +8,19 @@ import (
 	"fmt"
 )
 
+// The CompetenceFunc type is an adapter to allow the use of ordinary
+// function as Competence mutator.
+type CompetenceFunc func(context.Context, *ent.CompetenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CompetenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CompetenceMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CompetenceMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The ContactFunc type is an adapter to allow the use of ordinary
 // function as Contact mutator.
 type ContactFunc func(context.Context, *ent.ContactMutation) (ent.Value, error)

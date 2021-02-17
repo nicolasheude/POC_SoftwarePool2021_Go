@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"SofwareGoDay3/ent/competence"
 	"SofwareGoDay3/ent/contact"
 	"SofwareGoDay3/ent/developper"
 	"context"
@@ -67,6 +68,21 @@ func (dc *DevelopperCreate) SetNillableContactID(id *int) *DevelopperCreate {
 // SetContact sets the "contact" edge to the Contact entity.
 func (dc *DevelopperCreate) SetContact(c *Contact) *DevelopperCreate {
 	return dc.SetContactID(c.ID)
+}
+
+// AddCompetenceIDs adds the "competence" edge to the Competence entity by IDs.
+func (dc *DevelopperCreate) AddCompetenceIDs(ids ...int) *DevelopperCreate {
+	dc.mutation.AddCompetenceIDs(ids...)
+	return dc
+}
+
+// AddCompetence adds the "competence" edges to the Competence entity.
+func (dc *DevelopperCreate) AddCompetence(c ...*Competence) *DevelopperCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return dc.AddCompetenceIDs(ids...)
 }
 
 // Mutation returns the DevelopperMutation object of the builder.
@@ -218,6 +234,25 @@ func (dc *DevelopperCreate) createSpec() (*Developper, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: contact.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.CompetenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   developper.CompetenceTable,
+			Columns: []string{developper.CompetenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: competence.FieldID,
 				},
 			},
 		}

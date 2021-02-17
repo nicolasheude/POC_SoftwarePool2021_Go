@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"SofwareGoDay3/ent/competence"
 	"SofwareGoDay3/ent/contact"
 	"SofwareGoDay3/ent/developper"
 	"SofwareGoDay3/ent/predicate"
@@ -26,7 +27,8 @@ type DevelopperQuery struct {
 	fields     []string
 	predicates []predicate.Developper
 	// eager-loading edges.
-	withContact *ContactQuery
+	withContact    *ContactQuery
+	withCompetence *CompetenceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -71,6 +73,28 @@ func (dq *DevelopperQuery) QueryContact() *ContactQuery {
 			sqlgraph.From(developper.Table, developper.FieldID, selector),
 			sqlgraph.To(contact.Table, contact.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, developper.ContactTable, developper.ContactColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCompetence chains the current query on the "competence" edge.
+func (dq *DevelopperQuery) QueryCompetence() *CompetenceQuery {
+	query := &CompetenceQuery{config: dq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(developper.Table, developper.FieldID, selector),
+			sqlgraph.To(competence.Table, competence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, developper.CompetenceTable, developper.CompetenceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -254,12 +278,13 @@ func (dq *DevelopperQuery) Clone() *DevelopperQuery {
 		return nil
 	}
 	return &DevelopperQuery{
-		config:      dq.config,
-		limit:       dq.limit,
-		offset:      dq.offset,
-		order:       append([]OrderFunc{}, dq.order...),
-		predicates:  append([]predicate.Developper{}, dq.predicates...),
-		withContact: dq.withContact.Clone(),
+		config:         dq.config,
+		limit:          dq.limit,
+		offset:         dq.offset,
+		order:          append([]OrderFunc{}, dq.order...),
+		predicates:     append([]predicate.Developper{}, dq.predicates...),
+		withContact:    dq.withContact.Clone(),
+		withCompetence: dq.withCompetence.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -274,6 +299,17 @@ func (dq *DevelopperQuery) WithContact(opts ...func(*ContactQuery)) *DevelopperQ
 		opt(query)
 	}
 	dq.withContact = query
+	return dq
+}
+
+// WithCompetence tells the query-builder to eager-load the nodes that are connected to
+// the "competence" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DevelopperQuery) WithCompetence(opts ...func(*CompetenceQuery)) *DevelopperQuery {
+	query := &CompetenceQuery{config: dq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withCompetence = query
 	return dq
 }
 
@@ -342,8 +378,9 @@ func (dq *DevelopperQuery) sqlAll(ctx context.Context) ([]*Developper, error) {
 	var (
 		nodes       = []*Developper{}
 		_spec       = dq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			dq.withContact != nil,
+			dq.withCompetence != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -391,6 +428,35 @@ func (dq *DevelopperQuery) sqlAll(ctx context.Context) ([]*Developper, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "developper_contact" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Contact = n
+		}
+	}
+
+	if query := dq.withCompetence; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Developper)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Competence = []*Competence{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Competence(func(s *sql.Selector) {
+			s.Where(sql.InValues(developper.CompetenceColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.developper_competence
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "developper_competence" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "developper_competence" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Competence = append(node.Edges.Competence, n)
 		}
 	}
 

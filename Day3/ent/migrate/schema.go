@@ -8,6 +8,28 @@ import (
 )
 
 var (
+	// CompetencesColumns holds the columns for the "competences" table.
+	CompetencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "level", Type: field.TypeInt},
+		{Name: "developper_competence", Type: field.TypeInt, Nullable: true},
+	}
+	// CompetencesTable holds the schema information for the "competences" table.
+	CompetencesTable = &schema.Table{
+		Name:       "competences",
+		Columns:    CompetencesColumns,
+		PrimaryKey: []*schema.Column{CompetencesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "competences_developpers_competence",
+				Columns: []*schema.Column{CompetencesColumns[3]},
+
+				RefColumns: []*schema.Column{DeveloppersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ContactsColumns holds the columns for the "contacts" table.
 	ContactsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -49,11 +71,13 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CompetencesTable,
 		ContactsTable,
 		DeveloppersTable,
 	}
 )
 
 func init() {
+	CompetencesTable.ForeignKeys[0].RefTable = DeveloppersTable
 	ContactsTable.ForeignKeys[0].RefTable = DeveloppersTable
 }

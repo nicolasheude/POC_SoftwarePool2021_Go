@@ -18,6 +18,8 @@ const (
 
 	// EdgeContact holds the string denoting the contact edge name in mutations.
 	EdgeContact = "contact"
+	// EdgeCompetence holds the string denoting the competence edge name in mutations.
+	EdgeCompetence = "competence"
 
 	// Table holds the table name of the developper in the database.
 	Table = "developpers"
@@ -28,6 +30,13 @@ const (
 	ContactInverseTable = "contacts"
 	// ContactColumn is the table column denoting the contact relation/edge.
 	ContactColumn = "developper_contact"
+	// CompetenceTable is the table the holds the competence relation/edge.
+	CompetenceTable = "competences"
+	// CompetenceInverseTable is the table name for the Competence entity.
+	// It exists in this package in order to avoid circular dependency with the "competence" package.
+	CompetenceInverseTable = "competences"
+	// CompetenceColumn is the table column denoting the competence relation/edge.
+	CompetenceColumn = "developper_competence"
 )
 
 // Columns holds all SQL columns for developper fields.

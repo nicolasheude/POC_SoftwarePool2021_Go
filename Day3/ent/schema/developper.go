@@ -27,5 +27,6 @@ func (Developper) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("contact", Contact.Type).
 			Unique(),
+			edge.To("competence", Competence.Type),
 	}
 }

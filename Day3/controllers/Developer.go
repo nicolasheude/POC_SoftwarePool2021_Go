@@ -50,7 +50,10 @@ func DeleteDeveloper(id int, ctx context.Context, client *ent.Client) error {
 	err := client.Developper.
 		DeleteOneID(id).
 		Exec(ctx)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed delete Developper: %v", err)
+	}
+	return nil
 }
 
 // TheoBonus Adds a year to the age of a developer
