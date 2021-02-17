@@ -1,7 +1,7 @@
 package server
 
 import (
-	"SofwareGoDay2/router"
+	"SofwareGoDay3/router"
 
 	"github.com/gin-gonic/gin"
 )
