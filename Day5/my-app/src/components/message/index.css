@@ -1,0 +1,40 @@
+.allMessage {
+    background-color: #eccaff;
+    padding-left: 10px;
+}
+
+.title {
+    display: flex;
+    justify-content: center;
+}
+
+.name {
+    font-size: 20px;
+}
+
+.message {
+}
+
+.image {
+    border-radius: 50%;
+    width:90px;
+    height:90px;
+}
+
+.all {
+    background-color: #eccaff;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    border-width:2px;
+    border-style: double;
+    border-color:black;
+    margin-top: 10px;
+}
+
+.allImage {
+    background-color: #9ba9ff;
+    padding-left: 5%;
+    padding-top: 10px;
+    padding-right: 10px;
+}
